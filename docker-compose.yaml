@@ -1,0 +1,34 @@
+services:
+  project_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - JWT_SECRET_KEY
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: tokenDB
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d tokenDB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  migration:
+    image: gomicro/goose
+    command: goose -dir /app/migrations postgres "postgresql://admin:admin@postgres:5432/tokenDB?sslmode=disable" up
+    volumes:
+      - ./internal/database/migrations:/app/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy

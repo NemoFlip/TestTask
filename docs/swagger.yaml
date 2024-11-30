@@ -1,0 +1,26 @@
+basePath: /
+host: localhost:8080
+info:
+  contact: {}
+  title: TestTask
+paths:
+  /get-tokens/{user_id}:
+    get:
+      description: get access and refresh tokens via user_id
+      parameters:
+      - description: ID of the user
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: Create tokens
+      tags:
+      - tokens
+swagger: "2.0"
