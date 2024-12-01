@@ -15,6 +15,9 @@ import (
 // @title TestTask
 // @host localhost:8080
 // @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	router := gin.Default()
 	db, err := pkg.PostgresConnect("tokenDB")
@@ -31,6 +34,7 @@ func main() {
 	authServer := handlers.NewAuthServer(*tokenStorage, *tokenManager)
 
 	router.GET("/get-tokens/:user_id", authServer.СreateTokens)
+
 	router.POST("/refresh", authServer.RefreshTokens)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

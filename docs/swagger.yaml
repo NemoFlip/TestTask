@@ -1,4 +1,10 @@
 basePath: /
+definitions:
+  handlers.refreshInput:
+    properties:
+      refresh_token:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -23,4 +29,33 @@ paths:
       summary: Create tokens
       tags:
       - tokens
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: get access and refresh tokens via user_id
+      parameters:
+      - description: Данные для регистрации пользователя
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.refreshInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Refresh tokens
+      tags:
+      - tokens
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

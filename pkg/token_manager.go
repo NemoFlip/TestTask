@@ -1,9 +1,10 @@
 package pkg
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"time"
 )
 
 type TokenManager struct {
@@ -14,30 +15,22 @@ func NewTokenManager(signingKey string) *TokenManager {
 	return &TokenManager{signingKey: signingKey}
 }
 
-func (tm *TokenManager) ValidateToken(tokenString string) error {
+func (tm *TokenManager) ValidateAccessToken(tokenString string) (*jwt.Token, error) {
 	jwtToken, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		return []byte(tm.signingKey), nil
 	})
 	if err != nil {
-		return fmt.Errorf("invalid token: %w", err)
+		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return fmt.Errorf("unable to get claims from token: %w", err)
+		return nil, fmt.Errorf("unable to get claims from token: %w", err)
 	}
 	_, ok = claims["sub"].(string)
 	if !ok {
-		return fmt.Errorf("unable to get `sub` claim from token: %w", err)
+		return nil, fmt.Errorf("unable to get `sub` claim from token: %w", err)
 	}
-	exp, ok := claims["exp"].(float64)
-	if !ok {
-		return fmt.Errorf("unable to get `exp` claim from token: %w", err)
-	}
-	currentTime := time.Now().Unix()
-	if currentTime > int64(exp) {
-		return fmt.Errorf("token is expired")
-	}
-	return nil
+	return jwtToken, nil
 }
 
 func (tm *TokenManager) SignToken(token *jwt.Token) (string, error) {
@@ -48,11 +41,21 @@ func (tm *TokenManager) SignToken(token *jwt.Token) (string, error) {
 	return jwtTokenString, nil
 }
 
-func (tm *TokenManager) GenerateToken(payload jwt.MapClaims, signingMethod jwt.SigningMethod) (string, error) {
+func (tm *TokenManager) GenerateAccessToken(payload jwt.MapClaims, signingMethod jwt.SigningMethod) (string, error) {
 	accessToken := jwt.NewWithClaims(signingMethod, payload)
 	signedAccessToken, err := tm.SignToken(accessToken)
 	if err != nil {
 		return "", err
 	}
 	return signedAccessToken, nil
+}
+
+func (tm *TokenManager) GenerateRefreshToken() (string, error) {
+	tokenSlice := make([]byte, 32)
+	_, err := rand.Read(tokenSlice)
+	if err != nil {
+		return "", fmt.Errorf("unable to generate bytes: %s", err)
+	}
+	tokenString := base64.URLEncoding.EncodeToString(tokenSlice)
+	return tokenString, nil
 }
