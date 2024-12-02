@@ -4,6 +4,7 @@ import (
 	_ "TestTask/docs"
 	"TestTask/internal/database"
 	"TestTask/internal/transport/handlers"
+	"TestTask/internal/transport/middleware"
 	"TestTask/pkg"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -35,7 +36,12 @@ func main() {
 
 	router.GET("/get-tokens/:user_id", authServer.СreateTokens)
 
-	router.POST("/refresh", authServer.RefreshTokens)
+	checkAuth := middleware.CheckAuthorization(tokenManager)
+
+	secureGroup := router.Group("/", checkAuth)
+	{
+		secureGroup.POST("/refresh", authServer.RefreshTokens)
+	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
