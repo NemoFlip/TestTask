@@ -31,7 +31,6 @@ func NewAuthServer(tokenStorage database.RefreshStorage, tokenManager pkg.TokenM
 // @Router /get-tokens/{user_id} [get]
 func (as *AuthServer) CreateTokens(ctx *gin.Context) {
 	userID := ctx.Param("user_id")
-	ctx.Request.Header.Set("X-Forwarded-For", "192.12.33.11")
 	ip := ctx.ClientIP()
 	as.tokenManager.GenerateBothTokens(ctx, as.tokenStorage, userID, ip)
 }

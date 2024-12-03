@@ -22,9 +22,10 @@ import (
 // @name Authorization
 func main() {
 	router := gin.Default()
-	db, err := pkg.PostgresConnect("tokenDB")
+	db, err := pkg.PostgresConnect()
 	if err != nil {
 		log.Println(err)
+		return
 	}
 	secretKey, ok := os.LookupEnv("JWT_SECRET_KEY")
 	if !ok {

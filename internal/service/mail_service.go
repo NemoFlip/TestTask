@@ -37,14 +37,14 @@ func (ms *MailSender) SendMessage(ipAddr string) error {
 		ms.password,
 		ms.host,
 	)
-	toEmail := "clashtvink65@gmail.com"
+	toEmail := "example123@gmail.com"
 	msg := fmt.Sprintf("Hello!\nAttempt of logging in from suspicious IP address: %s.", ipAddr)
 	htmlBody := fmt.Sprintf("To: %s\nSubject:Warning\n%s", toEmail, msg)
 
 	err := smtp.SendMail(
 		fmt.Sprintf("%s:%s", ms.host, ms.port),
 		auth,
-		"artgamer3163@gmail.com",
+		ms.email,
 		[]string{toEmail},
 		[]byte(htmlBody),
 	)
