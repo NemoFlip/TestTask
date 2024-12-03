@@ -3,6 +3,7 @@ package main
 import (
 	_ "TestTask/docs"
 	"TestTask/internal/database"
+	"TestTask/internal/service"
 	"TestTask/internal/transport/handlers"
 	"TestTask/internal/transport/middleware"
 	"TestTask/pkg"
@@ -32,21 +33,20 @@ func main() {
 
 	tokenManager := pkg.NewTokenManager(secretKey)
 	tokenStorage := database.NewRefreshStorage(db)
-	authServer := handlers.NewAuthServer(*tokenStorage, *tokenManager)
+	mailSender := service.NewMailSender()
+	authServer := handlers.NewAuthServer(*tokenStorage, *tokenManager, mailSender)
 
-	router.GET("/get-tokens/:user_id", authServer.СreateTokens)
+	router.GET("/get-tokens/:user_id", authServer.CreateTokens)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	checkAuth := middleware.CheckAuthorization(tokenManager)
-
 	secureGroup := router.Group("/", checkAuth)
 	{
 		secureGroup.POST("/refresh", authServer.RefreshTokens)
 	}
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
 	err = router.Run(":8080")
 	if err != nil {
-		log.Fatalf("unable to run server on port (:8080): %s", err)
+		log.Fatalf("unable to run server on port 8080: %s", err)
 	}
 }

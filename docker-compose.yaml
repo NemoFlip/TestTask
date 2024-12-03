@@ -5,12 +5,15 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080
-      - 587:587
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       - JWT_SECRET_KEY
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_PASSWORD
+      - FROM_EMAIL
 
   postgres:
     image: postgres
